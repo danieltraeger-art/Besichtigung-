@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Besichtigungsprotokoll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E7ECEB; --surface:#FFFFFF; --ink:#15222A; --muted:#5A6970; --line:#CFD8DA;
+  --accent:#1F5F8B; --accent-ink:#FFFFFF; --ok:#2E7D5B; --warn:#C98A06; --bad:#C23E2C;
+  --chip:#F1F4F4;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F171C; --surface:#172229; --ink:#E4EBED; --muted:#91A2AA; --line:#2A3942;
+    --accent:#6FA8D6; --accent-ink:#0F171C; --ok:#5DBB8E; --warn:#E3B341; --bad:#E57361; --chip:#1E2C34;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F171C; --surface:#172229; --ink:#E4EBED; --muted:#91A2AA; --line:#2A3942;
+  --accent:#6FA8D6; --accent-ink:#0F171C; --ok:#5DBB8E; --warn:#E3B341; --bad:#E57361; --chip:#1E2C34;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 120px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:17px;line-height:1.45;-webkit-text-size-adjust:100%}
+button,input,textarea,select{font:inherit;color:inherit}
+.wrap{max-width:640px;margin:0 auto;padding:0 14px 130px}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);padding:12px 14px 10px;max-width:640px;margin:0 auto}
+.top{display:flex;align-items:center;gap:10px}
+.top h1{font-size:1.15rem;margin:0;line-height:1.2}
+.top p{margin:2px 0 0;color:var(--muted);font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .t{flex:1;min-width:0}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 14px;min-height:44px;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn:focus-visible,.chip:focus-visible,.rate button:focus-visible,.seg:focus-visible,.sec-head:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.progress{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}
+.seg{height:30px;border:0;padding:0;background:transparent;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;gap:4px}
+.seg span{display:block;font-size:.66rem;color:var(--muted);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg i{display:block;height:7px;border-radius:4px;background:var(--line);overflow:hidden;position:relative}
+.seg i b{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:4px;transition:width .25s}
+
+section{background:var(--surface);border-radius:14px;margin:12px 0;border:1px solid var(--line)}
+.sec-head{width:100%;display:flex;align-items:center;gap:10px;background:none;border:0;padding:16px;text-align:left;cursor:pointer;min-height:56px}
+.sec-head h2{flex:1;margin:0;font-size:1.05rem}
+.sec-head .count{color:var(--muted);font-size:.85rem}
+.sec-head svg{transition:transform .2s;flex:none}
+section.open .sec-head svg{transform:rotate(180deg)}
+.sec-body{display:none;padding:0 16px 18px}
+section.open .sec-body{display:block}
+.hint{font-size:.85rem;color:var(--muted);margin:4px 0 0}
+.sec-hint{background:var(--chip);border-radius:10px;padding:10px 12px;font-size:.88rem;color:var(--muted);margin:0 0 14px}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.f{margin:0 0 16px;grid-column:1/-1;min-width:0}
+.f.half{grid-column:auto}
+label.l,.l{display:block;font-weight:700;font-size:.92rem;margin-bottom:6px}
+input[type=text],input[type=tel],input[type=email],input[type=number],input[type=date],textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:11px 12px;min-height:46px;font-size:16px}
+textarea{min-height:88px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--chip);border-radius:999px;padding:9px 14px;min-height:42px;cursor:pointer;font-size:.95rem}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+
+.rate{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}
+.rate:last-child{border-bottom:0}
+.rate .n{flex:1;font-size:.95rem}
+.rate button{border:1px solid var(--line);background:var(--chip);border-radius:8px;min-width:44px;min-height:40px;padding:0 8px;cursor:pointer;font-size:.8rem}
+.rate button[aria-pressed="true"][data-tone="ok"]{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700}
+.rate button[aria-pressed="true"][data-tone="warn"]{background:var(--warn);border-color:var(--warn);color:#15222A;font-weight:700}
+.rate button[aria-pressed="true"][data-tone="n"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+.rate button[aria-pressed="true"][data-tone="bad"]{background:var(--bad);border-color:var(--bad);color:#fff;font-weight:700}
+
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px))}
+.bar .in{max-width:640px;margin:0 auto;display:flex;gap:10px}
+.bar .btn{flex:1}
+.saved{font-size:.78rem;color:var(--muted);text-align:center;margin-top:6px}
+
+.sheet-bg{position:fixed;inset:0;background:rgba(10,18,22,.5);z-index:30;display:none}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--surface);border-radius:18px 18px 0 0;max-height:88%;overflow:auto;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:none}
+.sheet .in{max-width:640px;margin:0 auto}
+.sheet.show,.sheet-bg.show{display:block}
+.sheet h3{margin:0 0 12px;font-size:1.1rem;display:flex;justify-content:space-between;align-items:center}
+.sheet textarea{min-height:46vh;font-size:15px;line-height:1.45}
+.row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.row .btn{flex:1;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.plist{list-style:none;margin:0 0 14px;padding:0}
+.plist li{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.plist li .pt{flex:1;min-width:0;cursor:pointer}
+.plist li .pt b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plist li .pt small{color:var(--muted)}
+.plist li.active .pt b{color:var(--accent)}
+.del{border:0;background:none;color:var(--bad);min-height:44px;padding:0 8px;cursor:pointer;font-size:.88rem}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:40;font-size:.9rem;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+@media (max-width:380px){.grid{grid-template-columns:1fr}.f.half{grid-column:1/-1}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="t">
+      <h1>Besichtigungsprotokoll</h1>
+      <p id="subtitle">Neues Protokoll</p>
+    </div>
+    <button class="btn" id="openList" aria-haspopup="dialog">Protokolle</button>
+  </div>
+  <div class="progress" id="progress" aria-label="Fortschritt je Abschnitt"></div>
+</header>
+
+<main class="wrap" id="form"></main>
+
+<div class="bar">
+  <div class="in">
+    <button class="btn" id="btnSummary">HubSpot-Notiz</button>
+    <button class="btn primary" id="btnMail">Follow-up-Mail</button>
+  </div>
+  <div class="saved" id="saved">Wird automatisch auf diesem Gerät gespeichert</div>
+</div>
+
+<div class="sheet-bg" id="sheetBg"></div>
+<div class="sheet" id="outSheet" role="dialog" aria-modal="true" aria-labelledby="outTitle">
+  <div class="in">
+    <h3><span id="outTitle">Text</span><button class="btn" data-close>Schließen</button></h3>
+    <textarea id="outText" aria-label="Erzeugter Text"></textarea>
+    <p class="hint">Du kannst den Text hier noch anpassen, bevor du ihn kopierst.</p>
+    <div class="row">
+      <button class="btn primary" id="copyBtn">Kopieren</button>
+      <button class="btn" id="shareBtn" hidden>Teilen</button>
+      <a class="btn" id="mailBtn" hidden target="_blank" rel="noopener">In Mail-App öffnen</a>
+    </div>
+  </div>
+</div>
+<div class="sheet" id="listSheet" role="dialog" aria-modal="true" aria-labelledby="listTitle">
+  <div class="in">
+    <h3><span id="listTitle">Protokolle</span><button class="btn" data-close>Schließen</button></h3>
+    <ul class="plist" id="plist"></ul>
+    <button class="btn primary" id="newBtn" style="width:100%">Neues Protokoll anlegen</button>
+    <div class="f" style="margin-top:18px">
+      <label class="l" for="aeName">Dein Name für die Mail-Signatur</label>
+      <input type="text" id="aeName" placeholder="Vor- und Nachname">
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const PAINS = {
+  'Erreichbarkeit':'schwere Erreichbarkeit der aktuellen Verwaltung',
+  'Reaktionszeit':'lange Reaktionszeiten bei Anfragen',
+  'Abrechnung':'verspätete oder fehlerhafte Jahresabrechnungen',
+  'Transparenz':'fehlende Transparenz bei Kosten und Vorgängen',
+  'Beschlussumsetzung':'Beschlüsse, die nicht zeitnah umgesetzt werden',
+  'Handwerker / Reparaturen':'schleppende Koordination von Reparaturen und Handwerkern',
+  'Kosten':'Verwaltungskosten im Verhältnis zur Leistung',
+  'Kein digitaler Zugang':'kein digitaler Zugang zu Unterlagen und Vorgängen',
+  'Wechselnde Ansprechpartner':'häufig wechselnde Ansprechpartner'
+};
+const ROADMAP = {
+  'Infotermin alle Eigentümer':'Informationstermin mit allen Eigentümern',
+  'Termin mit PRM':'Kennenlernen mit unserem Property Manager',
+  'ETV einberufen':'Vorbereitung der Einberufung der Eigentümerversammlung',
+  'Vollmachten einsammeln':'Vollmachten der Eigentümer vor der Versammlung einsammeln',
+  'Flyer im Haus':'Informations-Flyer für den Aushang im Haus'
+};
+const ZUSTAND=[['gut','gut','ok'],['Handlungsbedarf','Bedarf','warn'],['akut','akut','bad']];
+const GEREGELT=[['geregelt','geregelt','ok'],['unklar','unklar','warn'],['fehlt','fehlt','bad']];
+const WER=[['Firma','Firma','n'],['Eigentümer','ET','n'],['keiner','keiner','warn']];
+const SECTIONS = [
+ {id:'termin',title:'Termin & Teilnehmer',short:'Termin',hint:'Einheiten, Verwaltung, Kosten und Timing stehen schon im BANT – hier nur den Termin selbst erfassen.',fields:[
+  {k:'datum',l:'Datum',t:'date',half:1},
+  {k:'hubspot',l:'HubSpot-Deal',t:'text',ph:'Name oder Link',half:1},
+  {k:'adresse',l:'Adresse',t:'text',ph:'Straße Nr., PLZ Ort'},
+  {k:'anrede',l:'Anrede Hauptansprechpartner',t:'single',o:['Frau','Herr','Neutral']},
+  {k:'name',l:'Hauptansprechpartner',t:'text',ph:'Vor- und Nachname',half:1},
+  {k:'mail',l:'E-Mail',t:'email',half:1},
+  {k:'rolle',l:'Rolle',t:'single',o:['Beiratsvorsitz','Beirat','Eigentümer (Wortführer)','Eigentümer']},
+  {k:'weitere',l:'Weitere Teilnehmer',t:'textarea',ph:'Name – Rolle, je Zeile'},
+  {k:'matera',l:'Von Matera dabei',t:'multi',o:['Nur ich','Erfahrener AE / Experte','PRM']}
+ ]},
+ {id:'rundgang',title:'Rundgang Gemeinschaftseigentum',short:'Rundgang',hint:'Fotos direkt mit der Handy-Kamera machen und im HubSpot-Deal ablegen.',fields:[
+  {k:'bauteile',l:'Bauteile',t:'matrix',opts:ZUSTAND,items:['Dach','Fassade','Fenster / Türen GE','Treppenhaus','Keller / Feuchtigkeit','Heizungsanlage','Leitungen / Wasser','Aufzug','Außenanlagen / Wege','Tiefgarage / Stellplätze']},
+  {k:'maengel',l:'Sichtbare Mängel',t:'textarea',ph:'Was genau, wo?'},
+  {k:'gesamt',l:'Gesamteindruck',t:'single',o:['Gepflegt','Durchschnitt','Sanierungsstau']}
+ ]},
+ {id:'technik',title:'Technik & Dienstleister',short:'Technik',hint:'Zeigt Verwalter-Kompetenz und ist die Grundlage für die Übergabe ans PM-Team.',fields:[
+  {k:'heizung',l:'Heizung',t:'single',o:['Gas','Öl','Fernwärme','Wärmepumpe','Etagenheizung','Sonstige']},
+  {k:'warmwasser',l:'Warmwasser',t:'single',o:['Zentral','Dezentral','Unklar']},
+  {k:'pruefungen',l:'Wartung & Prüfungen',t:'matrix',opts:GEREGELT,items:['Heizungswartung','Trinkwasser / Legionellen','Aufzugsprüfung','Rauchwarnmelder','Messdienst / Heizkosten','Gebäudeversicherung']},
+  {k:'dienste',l:'Wer macht was?',t:'matrix',opts:WER,items:['Hausmeister','Treppenhausreinigung','Winterdienst','Gartenpflege']},
+  {k:'dienstleister',l:'Namen der Dienstleister / Verträge',t:'textarea',ph:'z. B. Messdienst, Wartungsfirma, Hausmeister'}
+ ]},
+ {id:'massnahmen',title:'Maßnahmen & Rücklage',short:'Maßnahmen',fields:[
+  {k:'massnahmen',l:'Anstehende Maßnahmen / Sanierungen',t:'textarea',ph:'Was, wann, geschätzte Kosten'},
+  {k:'offen',l:'Beschlossen, aber nicht umgesetzt',t:'textarea'},
+  {k:'ruecklage',l:'Erhaltungsrücklage',t:'text',ph:'ca. Betrag in €',half:1},
+  {k:'ruecklageEin',l:'Rücklage wirkt',t:'single',o:['Ausreichend','Knapp','Zu niedrig','Unbekannt']}
+ ]},
+ {id:'stimmen',title:'Beirat & Stimmen',short:'Stimmen',hint:'Kleine WEG ohne Beirat: Position des Wortführers bzw. der Eigentümer eintragen.',fields:[
+  {k:'beirat',l:'Beirat vorhanden',t:'single',o:['Ja','Nein']},
+  {k:'position',l:'Wo steht der Beirat bzw. Wortführer?',t:'single',o:['Matera vorne','Neutral','Wettbewerber vorne']},
+  {k:'positionWarum',l:'Warum?',t:'textarea'},
+  {k:'stimmrecht',l:'Stimmrecht laut Teilungserklärung',t:'single',o:['Köpfe','MEA','Objektprinzip','Unklar']},
+  {k:'mehrheit',l:'Mehrheitseigentümer',t:'single',o:['Keiner','Ja – für uns','Ja – offen','Ja – dagegen']},
+  {k:'gesichert',l:'Stimmen gesichert?',t:'single',o:['Mehrheit sicher','Offen','Unklar']},
+  {k:'vollmachten',l:'Wer hält Vollmachten?',t:'text',ph:'z. B. Altverwalter, Beirat'},
+  {k:'zugang',l:'Zugang zu den Eigentümern',t:'single',o:['Infotermin geplant','Abgelehnt','Nicht nötig']},
+  {k:'notar',l:'Notarielle Beglaubigung nötig (Verwalterzustimmung)?',t:'single',o:['Ja','Nein','TE prüfen']},
+  {k:'hint25',t:'note',text:'§ 25 WEG: Ohne abweichende Regelung in der Teilungserklärung gilt das Kopfprinzip. Verwalterbestellung per einfacher Mehrheit.'}
+ ]},
+ {id:'neu',title:'Neu seit der Demo',short:'Neu',hint:'Nur was du vor Ort Neues oder Anderes erfahren hast – der Rest steht in den SUPSAR-Notizen.',fields:[
+  {k:'pains',l:'Vor Ort bestätigte Pains',t:'multi',o:Object.keys(PAINS)},
+  {k:'otoene',l:'O-Töne',t:'textarea',ph:'Wörtliche Aussagen – die nutzt du im Follow-up'},
+  {k:'einwaende',l:'Neue Einwände',t:'textarea'},
+  {k:'aenderungen',l:'Weicht ab von BANT / Demo',t:'textarea',ph:'z. B. ETV-Termin verschoben, andere Kosten'}
+ ]},
+ {id:'next',title:'Nächste Schritte',short:'Next',fields:[
+  {k:'roadmap',l:'Roadmap',t:'multi',o:Object.keys(ROADMAP)},
+  {k:'schritte',l:'Weitere vereinbarte Schritte',t:'textarea',ph:'Je Zeile ein Schritt'},
+  {k:'unterlagen',l:'Unterlagen angefordert',t:'multi',o:['Teilungserklärung','ETV-Protokolle','Beschlusssammlung','Wirtschaftsplan','Jahresabrechnung','Verwaltervertrag','Wartungsverträge']},
+  {k:'angebotBis',l:'Angebot bis',t:'date',half:1},
+  {k:'fup',l:'Follow-up am',t:'date',half:1},
+  {k:'uebergabe',l:'Notizen für die Übergabe ans PM-Team',t:'textarea'}
+ ]}
+];
+
+/* ---------- storage ---------- */
+const KEY='bp_protocols_v2', AKEY='bp_active_v2', NKEY='bp_ae_v1';
+let store={list:[]}, active=null;
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY)||'null'); if(s&&Array.isArray(s.list)) store=s;}catch(e){}
+  let id=null; try{id=localStorage.getItem(AKEY);}catch(e){}
+  active=store.list.find(p=>p.id===id)||store.list[0]||null;
+  if(!active) newProtocol(false);
+}
+function persist(){
+  try{localStorage.setItem(KEY,JSON.stringify(store));localStorage.setItem(AKEY,active.id);
+    document.getElementById('saved').textContent='Gespeichert um '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){document.getElementById('saved').textContent='Speichern auf diesem Gerät nicht möglich – Text vor dem Schließen kopieren';}
+}
+let t; function save(){active.updated=Date.now(); clearTimeout(t); t=setTimeout(persist,300); updateProgress(); updateSubtitle();}
+function newProtocol(render=true){
+  const today=new Date(); const iso=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  active={id:'p'+Date.now(),updated:Date.now(),data:{datum:iso}};
+  store.list.unshift(active); persist(); if(render){renderForm();closeSheets();window.scrollTo(0,0);}
+}
+const D=()=>active.data;
+
+/* ---------- render ---------- */
+const chev='<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function renderForm(){
+  const form=document.getElementById('form'); form.innerHTML='';
+  SECTIONS.forEach((s,i)=>{
+    const sec=document.createElement('section'); sec.id='s-'+s.id; if(i===0) sec.classList.add('open');
+    sec.innerHTML=`<button class="sec-head" aria-expanded="${i===0}"><h2>${s.title}</h2><span class="count" data-count="${s.id}"></span>${chev}</button><div class="sec-body">${s.hint?`<p class="sec-hint">${s.hint}</p>`:''}<div class="grid"></div></div>`;
+    const grid=sec.querySelector('.grid');
+    s.fields.forEach(f=>grid.appendChild(renderField(f)));
+    sec.querySelector('.sec-head').addEventListener('click',e=>{const o=sec.classList.toggle('open');e.currentTarget.setAttribute('aria-expanded',o)});
+    form.appendChild(sec);
+  });
+  renderProgress(); updateSubtitle();
+}
+function renderField(f){
+  const w=document.createElement('div'); w.className='f'+(f.half?' half':'');
+  const id='f-'+f.k, v=D()[f.k];
+  if(f.t==='note'){w.innerHTML=`<p class="hint" style="margin-top:-8px">${f.text}</p>`;return w;}
+  if(['text','tel','email','number','date'].includes(f.t)){
+    w.innerHTML=`<label class="l" for="${id}">${f.l}</label><input id="${id}" type="${f.t}" ${f.t==='number'?'inputmode="numeric"':''} ${f.t==='tel'?'autocomplete="tel"':''} placeholder="${esc(f.ph||'')}" value="${esc(v||'')}">`;
+    w.querySelector('input').addEventListener('input',e=>{D()[f.k]=e.target.value;save();});
+  } else if(f.t==='textarea'){
+    w.innerHTML=`<label class="l" for="${id}">${f.l}</label><textarea id="${id}" placeholder="${esc(f.ph||'')}">${esc(v||'')}</textarea>`;
+    w.querySelector('textarea').addEventListener('input',e=>{D()[f.k]=e.target.value;save();});
+  } else if(f.t==='single'||f.t==='multi'){
+    w.innerHTML=`<span class="l" id="${id}">${f.l}</span><div class="chips" role="group" aria-labelledby="${id}"></div>`;
+    const box=w.querySelector('.chips');
+    f.o.forEach(o=>{
+      const b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=o;
+      const on=f.t==='multi'?(v||[]).includes(o):v===o; b.setAttribute('aria-pressed',on);
+      b.addEventListener('click',()=>{
+        if(f.t==='single'){D()[f.k]=D()[f.k]===o?'':o; box.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.textContent===D()[f.k]));}
+        else{const a=new Set(D()[f.k]||[]); a.has(o)?a.delete(o):a.add(o); D()[f.k]=[...a]; b.setAttribute('aria-pressed',a.has(o));}
+        save();
+      });
+      box.appendChild(b);
+    });
+  } else if(f.t==='matrix'){
+    if(!D()[f.k]||typeof D()[f.k]!=='object') D()[f.k]={};
+    w.innerHTML=`<span class="l">${f.l}</span>`;
+    f.items.forEach(it=>{
+      const r=document.createElement('div'); r.className='rate';
+      r.innerHTML=`<span class="n">${it}</span>`;
+      f.opts.forEach(([val,lab,tone])=>{
+        const b=document.createElement('button'); b.type='button'; b.dataset.v=val; b.dataset.tone=tone; b.textContent=lab;
+        b.setAttribute('aria-label',it+': '+val); b.setAttribute('aria-pressed',D()[f.k][it]===val);
+        b.addEventListener('click',()=>{const cur=D()[f.k]; cur[it]=cur[it]===val?'':val; if(!cur[it]) delete cur[it];
+          r.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',cur[it]===x.dataset.v)); save();});
+        r.appendChild(b);
+      });
+      w.appendChild(r);
+    });
+  }
+  return w;
+}
+function filled(f){const v=D()[f.k]; if(f.t==='note') return null; if(f.t==='matrix') return !!v&&Object.keys(v).length>0; if(Array.isArray(v)) return v.length>0; return !!(v&&String(v).trim());}
+function renderProgress(){
+  const p=document.getElementById('progress'); p.innerHTML='';
+  SECTIONS.forEach(s=>{
+    const b=document.createElement('button'); b.className='seg'; b.setAttribute('aria-label','Zu '+s.title);
+    b.innerHTML=`<span>${s.short}</span><i><b data-bar="${s.id}"></b></i>`;
+    b.addEventListener('click',()=>{const sec=document.getElementById('s-'+s.id); sec.classList.add('open'); sec.querySelector('.sec-head').setAttribute('aria-expanded',true); sec.scrollIntoView({behavior:'smooth',block:'start'});});
+    p.appendChild(b);
+  });
+  updateProgress();
+}
+function updateProgress(){
+  SECTIONS.forEach(s=>{
+    const fs=s.fields.filter(f=>f.t!=='note'); const n=fs.filter(filled).length;
+    const bar=document.querySelector(`[data-bar="${s.id}"]`); if(bar) bar.style.width=(n/fs.length*100)+'%';
+    const c=document.querySelector(`[data-count="${s.id}"]`); if(c) c.textContent=n+'/'+fs.length;
+  });
+}
+function updateSubtitle(){document.getElementById('subtitle').textContent=D().adresse||'Neues Protokoll';}
+
+/* ---------- text output ---------- */
+function fmtDate(iso,weekday){if(!iso) return ''; const d=new Date(iso+'T12:00:00'); return d.toLocaleDateString('de-DE',weekday?{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'}:{day:'2-digit',month:'2-digit',year:'numeric'});}
+function val(f){const v=D()[f.k]; if(f.t==='date') return fmtDate(v); if(Array.isArray(v)) return v.join(', '); return String(v).trim();}
+function summary(){
+  const d=D(), out=['Vor-Ort-Termin'+(d.adresse?' – '+d.adresse:'')+(d.datum?' ('+fmtDate(d.datum)+')':'')];
+  const fz=[];
+  if(d.position) fz.push('Beirat/Wortführer: '+d.position+(d.positionWarum&&d.positionWarum.trim()?' – '+oneLine(d.positionWarum):''));
+  if(d.zugang) fz.push('Zugang zu Eigentümern: '+d.zugang);
+  if(d.gesichert||d.mehrheit||d.vollmachten) fz.push('Stimmen: '+[d.gesichert,d.mehrheit&&('Mehrheitseigentümer '+d.mehrheit),d.vollmachten&&('Vollmachten: '+d.vollmachten)].filter(Boolean).join(', '));
+  if(fz.length) out.push('','KURZFAZIT',...fz);
+  SECTIONS.forEach(s=>{
+    const lines=[];
+    s.fields.forEach(f=>{
+      if(!filled(f)) return;
+      if(f.t==='matrix'){lines.push(f.l+':'); Object.entries(d[f.k]).forEach(([k,v])=>lines.push('  '+k+': '+v));}
+      else if(f.t==='textarea'){lines.push(f.l+':'); d[f.k].trim().split('\n').forEach(x=>x.trim()&&lines.push('  '+x.trim()));}
+      else lines.push(f.l.replace(/\?$/,'')+': '+val(f));
+    });
+    if(lines.length){out.push('',s.title.toUpperCase(),...lines);}
+  });
+  return out.join('\n');
+}
+function greeting(){
+  const n=(D().name||'').trim(), a=D().anrede;
+  if(n&&(a==='Frau'||a==='Herr')) return 'Guten Tag '+a+' '+n.split(/\s+/).pop()+',';
+  if(n) return 'Guten Tag '+n+',';
+  return 'Guten Tag,';
+}
+function oneLine(s){return s.trim().split('\n').map(x=>x.trim()).filter(Boolean).join('; ');}
+function mailSubject(){return 'Unser Termin vor Ort'+(D().adresse?' – '+D().adresse:'');}
+function mailBody(){
+  const d=D(), L=[greeting(),''];
+  const today=new Date(); const isToday=d.datum&&new Date(d.datum+'T12:00:00').toDateString()===today.toDateString();
+  const wann=!d.datum||isToday?'heute':'am '+fmtDate(d.datum);
+  L.push(`vielen Dank für Ihre Zeit ${wann} und den Rundgang durch ${d.adresse?'die '+d.adresse:'Ihr Objekt'}.`);
+  const take=[];
+  (d.pains||[]).forEach(p=>{const s=PAINS[p]; if(s) take.push(s.charAt(0).toUpperCase()+s.slice(1));});
+  if(d.massnahmen&&d.massnahmen.trim()) take.push('Anstehende Maßnahmen: '+oneLine(d.massnahmen));
+  if(d.offen&&d.offen.trim()) take.push('Beschlossen, aber noch nicht umgesetzt: '+oneLine(d.offen));
+  if(take.length){L.push('','Was ich aus unserem Gespräch mitgenommen habe:',...take.map(x=>'– '+x));}
+  const bt=Object.entries(d.bauteile||{}).filter(([k,v])=>v!=='gut');
+  if(bt.length){L.push('','Beim Rundgang ist mir aufgefallen:',...bt.map(([k,v])=>'– '+k+': '+(v==='akut'?'sollte zeitnah angegangen werden':'mittelfristiger Handlungsbedarf')));}
+  const steps=(d.roadmap||[]).map(x=>ROADMAP[x]).filter(Boolean).concat((d.schritte||'').split('\n').map(x=>x.trim()).filter(Boolean));
+  if(steps.length){L.push('','Als nächste Schritte haben wir vereinbart:',...steps.map(x=>'– '+x));}
+  if((d.unterlagen||[]).length){L.push('','Damit ich Ihnen ein passendes Angebot erstellen kann, benötige ich noch:',...d.unterlagen.map(x=>'– '+x));}
+  if(d.angebotBis) L.push('','Mein Angebot erhalten Sie bis zum '+fmtDate(d.angebotBis)+'.');
+  L.push('', d.fup?'Ich melde mich am '+fmtDate(d.fup,true)+' bei Ihnen.':'Ich melde mich in den nächsten Tagen bei Ihnen.');
+  L.push('Wenn vorher Fragen aufkommen, melden Sie sich gern direkt bei mir.','','Viele Grüße');
+  let ae=''; try{ae=localStorage.getItem(NKEY)||'';}catch(e){}
+  L.push(ae||'[Dein Name]');
+  return L.join('\n');
+}
+
+/* ---------- sheets ---------- */
+const bg=document.getElementById('sheetBg');
+function openSheet(el){bg.classList.add('show');el.classList.add('show');const f=el.querySelector('textarea,button');}
+function closeSheets(){document.querySelectorAll('.sheet,.sheet-bg').forEach(x=>x.classList.remove('show'));}
+bg.addEventListener('click',closeSheets);
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeSheets));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheets();});
+
+const outText=document.getElementById('outText'), mailBtn=document.getElementById('mailBtn'), shareBtn=document.getElementById('shareBtn');
+let mode='summary';
+function showOut(m){
+  mode=m;
+  document.getElementById('outTitle').textContent=m==='mail'?'Follow-up-Mail':'Notiz für HubSpot';
+  outText.value=m==='mail'?'Betreff: '+mailSubject()+'\n\n'+mailBody():summary();
+  mailBtn.hidden=m!=='mail';
+  shareBtn.hidden=!navigator.share;
+  updateMailLink();
+  openSheet(document.getElementById('outSheet'));
+}
+function updateMailLink(){
+  if(mode!=='mail') return;
+  let txt=outText.value, subj=mailSubject();
+  const m=txt.match(/^Betreff: (.*)\n\n/); if(m){subj=m[1]; txt=txt.slice(m[0].length);}
+  mailBtn.href='mailto:'+encodeURIComponent((D().mail||'').trim())+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(txt);
+}
+outText.addEventListener('input',updateMailLink);
+document.getElementById('btnSummary').addEventListener('click',()=>showOut('summary'));
+document.getElementById('btnMail').addEventListener('click',()=>showOut('mail'));
+function toast(s){const t=document.getElementById('toast'); t.textContent=s; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800);}
+document.getElementById('copyBtn').addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText(outText.value); toast('Kopiert');}
+  catch(e){outText.focus(); outText.select(); try{document.execCommand('copy')?toast('Kopiert'):toast('Text ist markiert – bitte manuell kopieren');}catch(_){toast('Text ist markiert – bitte manuell kopieren');}}
+});
+shareBtn.addEventListener('click',async()=>{try{await navigator.share({title:mode==='mail'?mailSubject():'Besichtigungsprotokoll',text:outText.value});}catch(e){}});
+
+/* ---------- protocol list ---------- */
+function renderList(){
+  const ul=document.getElementById('plist'); ul.innerHTML='';
+  store.list.sort((a,b)=>b.updated-a.updated).forEach(p=>{
+    const li=document.createElement('li'); if(p.id===active.id) li.className='active';
+    const when=new Date(p.updated).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    li.innerHTML=`<div class="pt" tabindex="0" role="button"><b>${esc(p.data.adresse||'Ohne Adresse')}</b><small>${p.id===active.id?'Geöffnet, ':''}zuletzt bearbeitet ${when}</small></div><button class="del">Löschen</button>`;
+    const open=()=>{active=p; persist(); renderForm(); closeSheets(); window.scrollTo(0,0);};
+    li.querySelector('.pt').addEventListener('click',open);
+    li.querySelector('.pt').addEventListener('keydown',e=>{if(e.key==='Enter')open();});
+    const del=li.querySelector('.del');
+    del.addEventListener('click',()=>{
+      if(del.dataset.armed){store.list=store.list.filter(x=>x.id!==p.id); if(!store.list.length){newProtocol(false);} else if(p.id===active.id){active=store.list[0];} persist(); renderForm(); renderList();}
+      else{del.dataset.armed='1'; del.textContent='Wirklich löschen?'; setTimeout(()=>{if(del.isConnected){delete del.dataset.armed; del.textContent='Löschen';}},3000);}
+    });
+    ul.appendChild(li);
+  });
+}
+document.getElementById('openList').addEventListener('click',()=>{renderList(); try{document.getElementById('aeName').value=localStorage.getItem(NKEY)||'';}catch(e){} openSheet(document.getElementById('listSheet'));});
+document.getElementById('newBtn').addEventListener('click',()=>{newProtocol(true); toast('Neues Protokoll angelegt');});
+document.getElementById('aeName').addEventListener('input',e=>{try{localStorage.setItem(NKEY,e.target.value);}catch(_){}});
+
+load(); renderForm();
+</script>
+</body>
+</html>
